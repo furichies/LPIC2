@@ -1,0 +1,9 @@
+[Unit]
+Description=sincroniza sincro con rsync cada minuto
+
+[Timer]
+OnUnitActiveSec=1m
+Unit=system-sincrorsync.service
+
+[Install]
+WantedBy=timers.target

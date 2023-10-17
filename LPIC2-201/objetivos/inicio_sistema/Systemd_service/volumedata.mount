@@ -1,0 +1,14 @@
+[Unit]
+Description=montar volumedata
+Requires=local-fs.target
+After=local-fs.target
+
+[Mount]
+What=/dev/mapper/volumen01-data
+Where=/volumedata
+Type=xfs
+Options=defaults
+
+[Install]
+WantedBy=multi-user.target
+

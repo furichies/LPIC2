@@ -1,0 +1,11 @@
+[Unit]
+Description=Sincronizando directorio sincro con rsync
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/system-sincrorsync.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

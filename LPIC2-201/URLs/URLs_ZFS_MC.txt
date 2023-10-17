@@ -1,0 +1,3 @@
+ZFS OpenZFS (master class CFTIC Getafe)
+https://view.genial.ly/61a1f1947545140e06b394ee/presentation-zfs-un-sistema-de-ficheros-para-el-futuro
+

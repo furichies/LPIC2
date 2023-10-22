@@ -1,0 +1,43 @@
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -P OUTPUT ACCEPT
+
+#Reenvio de salida enmascarada --- convierte direcciones NAT
+
+iptables -t nat -A POSTROUTING -o enp0s8 -j MASQUERADE
+
+
+iptables -A FORWARD -i enp0s10 -o enp0s8 -j ACCEPT
+iptables -A FORWARD -i enp0s9 -o enp0s8 -j ACCEPT
+iptables -A FORWARD -i enp0s8 -o enp0s10 -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i enp0s8 -o enp0s9 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+iptables -L
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+ACCEPT     all  --  anywhere             anywhere            
+ACCEPT     all  --  anywhere             anywhere            
+ACCEPT     all  --  anywhere             anywhere             state RELATED,ESTABLISHED
+ACCEPT     all  --  anywhere             anywhere             state RELATED,ESTABLISHED
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination     
+
+iptables -t nat -L
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination         
+DNAT       tcp  --  anywhere             anywhere             tcp dpt:http to:192.168.2.20:80
+DNAT       tcp  --  anywhere             anywhere             tcp dpt:ftp to:192.168.2.20:21
+
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain POSTROUTING (policy ACCEPT)
+target     prot opt source               destination         
+MASQUERADE  all  --  anywhere             anywhere       

@@ -1,0 +1,70 @@
+Vagrant.configure("2") do |config|
+  # Configuración del host "bastion" PUERTA DE ACCESO A LAS REDES PRIVADAS 192.168.[1-2].0 desde la red 172.16.1.0
+  config.vm.define "bastion" do |bastion|
+    bastion.vm.box = "ubuntu/jammy64"
+    
+    # Configura la interfaz en la red "bridge" con IP estática
+    bastion.vm.network "public_network", bridge: "nombre_de_tu_interfaz_bridge", ip: "172.16.1.101", type: "dhcp"
+    
+    
+    # Configura la interfaz en la red "vboxnet9" con IPs estática - GATEWAYS DE LAS REDES 192.168.[1-2].0
+    bastion.vm.network "private_network", ip: "192.168.1.10", virtualbox__intnet: "vboxnet9"
+    bastion.vm.network "private_network", ip: "192.168.2.10", virtualbox__intnet: "vboxnet9"
+
+    bastion.vm.hostname = "bastion"
+
+    # Configura recursos (2 núcleos y 2GB de RAM)
+    bastion.vm.provider "virtualbox" do |vb|
+      vb.name = "bastion"
+      vb.memory = 2048
+      vb.cpus = 2
+    end
+  end
+
+  # Configuración del host "interno"
+  config.vm.define "interno" do |interno|
+    interno.vm.box = "ubuntu/jammy64"
+   
+    # Configura la interfaz en la red "vboxnet9" con IP estática
+    interno.vm.network "private_network", ip: "192.168.1.20", virtualbox__intnet: "vboxnet9"
+    # Provisión de "interno" - SU GATEWAY SERÁ BASTIÓN
+    interno.vm.provision "shell", inline: <<-SHELL
+		ip route del default
+		ip route add default via 192.168.1.10 
+    SHELL
+    interno.vm.hostname = "interno"
+
+    # Configura recursos (2 núcleos y 2GB de RAM)
+    interno.vm.provider "virtualbox" do |vb|
+      vb.name = "interno"
+      vb.memory = 2048
+      vb.cpus = 2
+    end
+  end
+
+  # Configuración del host "dmz"
+  config.vm.define "dmz" do |dmz|
+    dmz.vm.box = "ubuntu/jammy64"
+    
+    # Configura la interfaz en la red "vboxnet9" con IP estática
+    dmz.vm.network "private_network", ip: "192.168.2.20", virtualbox__intnet: "vboxnet9"
+    
+    # Provisión de Apache en el host "dmz" SERVIDOR APACHE (80) Y FTP (21)
+    dmz.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get install -y apache2
+      sudo apt install vsftpd
+      ip route del default
+	  ip route add default via 192.168.2.10 
+    SHELL
+
+    dmz.vm.hostname = "dmz"
+
+    # Configura recursos (2 núcleos y 2GB de RAM)
+    dmz.vm.provider "virtualbox" do |vb|
+      vb.name = "dmz"
+      vb.memory = 2048
+      vb.cpus = 2
+    end
+  end
+end
